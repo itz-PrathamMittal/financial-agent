@@ -1,0 +1,141 @@
+# 🔄 Financial Agent Workflow Diagram
+
+## 📋 High-Level Process Flow
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Input Data    │────▶│   LLM Analysis   │────▶│  JSON Parsing   │
+│                 │    │                  │    │                 │
+│ • UPI: 70,000   │    │ • NeuroLink SDK  │    │ • Extract JSON  │
+│ • Net: 100,000  │    │ • Gemini 2.5     │    │ • Parse Content │
+│ • Cash: 30,000  │    │ • Smart Prompts  │    │ • Validate Data │
+│ • Card: 50,000  │    │                  │    │                 │
+│ • Wallet: 50,000│    │                  │    │                 │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+                                                          │
+                                                          ▼
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│  Final Output   │◀────│   Data Cleaning  │◀────│ Fallback Logic  │
+│                 │    │                  │    │                 │
+│ {               │    │ • Filter Invalid │    │ • Text Parsing  │
+│   "graphType":  │    │ • Recalculate    │    │ • Regex Matching│
+│   "pie chart",  │    │ • Fix Rounding   │    │ • Manual Calc   │
+│   "totalAmount":│    │ • Validate %     │    │ • Use Original  │
+│   300000,       │    │                  │    │                 │
+│   "metrics": [  │    │                  │    │                 │
+│     {"method":  │    │                  │    │                 │
+│      "UPI",     │    │                  │    │                 │
+│      "percentage│    │                  │    │                 │
+│      ": 23}, ...│    │                  │    │                 │
+│   ]             │    │                  │    │                 │
+│ }               │    │                  │    │                 │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+## 🔀 Decision Flow
+
+```
+Start
+  │
+  ▼
+┌─────────────────┐
+│ Initialize      │
+│ NeuroLink       │
+└─────────────────┘
+  │
+  ▼
+┌─────────────────┐
+│ Send Prompt to  │
+│ Gemini 2.5      │
+└─────────────────┘
+  │
+  ▼
+┌─────────────────┐    YES   ┌─────────────────┐
+│ LLM Response    │─────────▶│ Extract JSON    │
+│ Contains JSON?  │          │ Block           │
+└─────────────────┘          └─────────────────┘
+  │ NO                         │
+  ▼                            ▼
+┌─────────────────┐          ┌─────────────────┐    YES   ┌─────────────────┐
+│ Parse Text with │          │ JSON Valid &    │─────────▶│ Clean & Process │
+│ Regex Patterns  │          │ Has Metrics?    │          │ Data            │
+└─────────────────┘          └─────────────────┘          └─────────────────┘
+  │                            │ NO                         │
+  ▼                            ▼                            ▼
+┌─────────────────┐          ┌─────────────────┐          ┌─────────────────┐
+│ Extract Methods │          │ Use Fallback    │          │ Apply Rounding  │
+│ and Amounts     │          │ Mechanisms      │          │ Logic           │
+└─────────────────┘          └─────────────────┘          └─────────────────┘
+  │                            │                            │
+  └────────────────────────────┼────────────────────────────┘
+                               ▼
+                             ┌─────────────────┐
+                             │ Determine Chart │
+                             │ Type            │
+                             └─────────────────┘
+                               │
+                               ▼
+                             ┌─────────────────┐
+                             │ Generate Final  │
+                             │ JSON Output     │
+                             └─────────────────┘
+                               │
+                               ▼
+                               End
+```
+
+## 🛠️ Implementation Comparison
+
+### index.ts (Production)
+```
+Input Data → Structured Prompt → LLM → JSON Extraction → Data Cleaning → Rich Output
+    ↓              ↓                ↓         ↓              ↓             ↓
+Hardcoded     Specific         Gemini    Extract JSON   Filter/Fix    Pretty Print
+Financial     Instructions      2.5      from ```       Invalid       with Emojis
+Data          for JSON                   code blocks    Entries       & Breakdown
+```
+
+### index2.ts (Development)
+```
+Input Data → Open Prompt → LLM → Content Display → JSON Extraction → Simple Output
+    ↓           ↓           ↓         ↓               ↓                ↓
+Same         Generic      Gemini   Show Raw        Extract JSON    Basic JSON
+Financial    Analysis      2.5      Response        from Content    Structure
+Data         Request                Text
+```
+
+## 🔧 Error Handling Flow
+
+```
+┌─────────────────┐
+│ LLM Call Failed │
+└─────────────────┘
+  │
+  ▼
+┌─────────────────┐    NO    ┌─────────────────┐
+│ Auth Credentials│─────────▶│ Show Config     │
+│ Available?      │          │ Error Message   │
+└─────────────────┘          └─────────────────┘
+  │ YES
+  ▼
+┌─────────────────┐    NO    ┌─────────────────┐
+│ JSON Response   │─────────▶│ Try Text        │
+│ Parseable?      │          │ Parsing         │
+└─────────────────┘          └─────────────────┘
+  │ YES                        │
+  ▼                            ▼
+┌─────────────────┐          ┌─────────────────┐    NO    ┌─────────────────┐
+│ Clean & Validate│          │ Regex Patterns  │─────────▶│ Use Original    │
+│ Extracted Data  │          │ Match?          │          │ Financial Data  │
+└─────────────────┘          └─────────────────┘          └─────────────────┘
+  │                            │ YES                        │
+  └────────────────────────────┼────────────────────────────┘
+                               ▼
+                             ┌─────────────────┐
+                             │ Calculate       │
+                             │ Percentages     │
+                             │ & Chart Type    │
+                             └─────────────────┘
+```
+
+This workflow ensures that the financial agent always produces a valid output, regardless of LLM response quality or API availability.
